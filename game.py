@@ -12,10 +12,9 @@ room = pygame.transform.scale(room, (560, 500))
 # Set screen dimensions
 WIDTH, HEIGHT = 560, 500
 
-
 # Create the screen
 screen = pygame.display.set_mode((560, 500))
-room_surface = pygame.image.load('images/room.jpg')
+room_surface = pygame.image.load('room.jpg')
 
 # Set title of screen
 pygame.display.set_caption("Eat the GumGum!")
@@ -23,11 +22,12 @@ font = pygame.font.Font(None, 50)
 
 # Load images
 luffy = pygame.image.load('luffy.png')
+
 gumgum = pygame.image.load('gumgum.png')
 
 # Scale Images
-luffy = pygame.transform.scale(luffy, (100, 100))
-gumgum = pygame.transform.scale(gumgum, (100, 100))
+luffy = pygame.transform.scale(luffy, (130, 130))
+gumgum = pygame.transform.scale(gumgum, (70, 120))
 
 # Initialize position of gumgum
 gumgum_x = random.randint(0, WIDTH - 100)
@@ -63,11 +63,11 @@ while running:
 
     # Check for key presses
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT]:
+    if keys[pygame.K_LEFT] and luffy_x > 0:
         luffy_x -= 5
     if keys[pygame.K_RIGHT]:
         luffy_x += 5
-    if keys[pygame.K_UP]:
+    if keys[pygame.K_UP] and luffy_y > 0:
         luffy_y -= 5
     if keys[pygame.K_DOWN]:
         luffy_y += 5
