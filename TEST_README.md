@@ -1,43 +1,25 @@
-# Test Case Documentation
+# Test Documentation
 
-## Introduction
+This documentation provides a detailed description of the resources used to develop the test cases for the game.
 
-This project contains a set of test cases for a game developed using the Pygame library. The purpose of these test cases is to ensure that the game functions as expected.
+## Resources
 
-## Test Case Description
+- Pygame: A set of Python modules designed for writing video games.
+- unittest: A built-in Python library for creating and running test cases.
+- MagicMock: A class from the unittest.mock module that can be used to replace parts of your system under test and make assertions about how they have been used.
 
-### Pygame Initialization
+## Justification for the use of resources
+Using Pygame provides functionalities for creating games in Python. It includes modules for graphics, sound, and even networking, which are essential for our game.
 
-This test case checks if the Pygame library is properly initialized. The expected outcome is that the `pygame.init()` function is called once.
+Using unittest and MagicMock allow to create automated tests for our game. This ensures that the game works as expected and helps us to catch bugs early.
 
-### Screen Creation
+## Test Cases
 
-This test case checks if the game screen is properly created. The expected outcome is that the `pygame.display.set_mode()` function is called with the correct arguments.
+Here are the test cases developed in the game:
 
-### Image Loading
-
-This test case checks if the game images are properly loaded. The expected outcome is that the `pygame.image.load()` function is called with the correct arguments.
-
-### Sound Loading
-
-This test case checks if the game sounds are properly loaded. The expected outcome is that the `pygame.mixer.music.load()` function is called with the correct arguments.
-
-### Sound Playing
-
-This test case checks if the game sounds are properly played. The expected outcome is that the `pygame.mixer.music.play()` function is called.
-
-## Resources Used
-
-The following resources are used in these test cases:
-
-- **unittest**: A built-in Python library used for testing Python code.
-- **pygame**: A set of Python modules designed for writing video games.
-- **unittest.mock**: A Python library used for testing in Python. It allows you to replace parts of your system under test and make assertions about how they have been used.
-
-## Justification for Resources
-
-The `unittest` and `unittest.mock` libraries were chosen for their extensive support for testing in Python. They provide a rich set of tools for constructing and running tests, making them ideal for our needs.
-
-The `pygame` library was chosen for its extensive support for game development in Python. It provides a wide range of functionalities for creating games, including functionalities for graphics, sound, and input handling.
-
+- `test_pygame_initialization`: This test case checks if Pygame is initialized correctly.
+- `test_screen_creation`: This test case checks if the game screen is created correctly.
+- `test_image_loading`: This test case checks if the game images are loaded correctly.
+- `test_sound_loading`: This test case checks if the game sounds are loaded correctly.
+- `test_sound_playing`: This test case checks if the game sounds are played correctly.
 
