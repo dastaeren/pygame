@@ -1,14 +1,40 @@
 import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
-# Title of the app
-st.title("type anything")
+# Set up page configuration
+st.set_page_config(page_title="Simple Streamlit Dashboard", layout="wide")
 
-# Input field
-user_input = st.text_input("Enter some text:")
+# Sidebar for input
+st.sidebar.header("User Input")
+user_name = st.sidebar.text_input("Enter your name", "Guest")
+user_age = st.sidebar.slider("Select your age", 18, 100, 25)
 
-# Display the entered text
-if user_input:
-    st.write(f"You entered: {user_input}")
-else:
-    st.write("No text entered yet.")
+# Main area
+st.title("Welcome to Your Personalized Dashboard!")
+st.write(f"Hello, {user_name}!")
+st.write(f"You are {user_age} years old.")
+
+# Generating random data for plotting
+data = pd.DataFrame({
+    "Age": np.random.randint(20, 60, 100),
+    "Score": np.random.randint(0, 100, 100)
+})
+
+# Button to generate plot
+if st.sidebar.button("Generate Plot"):
+    st.subheader("Age vs. Score")
+    fig, ax = plt.subplots()
+    ax.scatter(data['Age'], data['Score'])
+    ax.set_xlabel("Age")
+    ax.set_ylabel("Score")
+    ax.set_title("Scatter plot of Age vs. Score")
+    st.pyplot(fig)
+
+# Footer message
+st.markdown("""
+    --- 
+    Created with ❤️ by Streamlit.
+""")
 
