@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 # Set up page configuration
 st.set_page_config(page_title="Simple Streamlit Dashboard", layout="wide")
@@ -25,16 +24,12 @@ data = pd.DataFrame({
 # Button to generate plot
 if st.sidebar.button("Generate Plot"):
     st.subheader("Age vs. Score")
-    fig, ax = plt.subplots()
-    ax.scatter(data['Age'], data['Score'])
-    ax.set_xlabel("Age")
-    ax.set_ylabel("Score")
-    ax.set_title("Scatter plot of Age vs. Score")
-    st.pyplot(fig)
+    st.scatter_chart(data)
 
 # Footer message
 st.markdown("""
     --- 
     Created with ❤️ by Streamlit.
 """)
+
 
