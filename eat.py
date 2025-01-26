@@ -1,62 +1,73 @@
 import streamlit as st
-import random
-import time
-from PIL import Image
+import pandas as pd
+import matplotlib.pyplot as plt
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+import datetime
 
-# Game settings
-WIDTH, HEIGHT = 560, 500
-game_duration = 60  # Game time in seconds
+# Initialize Sentiment Analyzer
+analyzer = SentimentIntensityAnalyzer()
 
-# Initialize game state
-if 'score' not in st.session_state:
-    st.session_state.score = 0
-if 'game_started' not in st.session_state:
-    st.session_state.game_started = False
-if 'start_time' not in st.session_state:
-    st.session_state.start_time = None
+# Create a placeholder for user input
+st.title("MindEase AI - Mood Journal")
+st.write("Track your feelings and get personalized well-being tips.")
 
-# Load images
-room_img = Image.open("room.jpg").resize((WIDTH, HEIGHT))
-luffy_img = Image.open("luffy.png").resize((150, 130))
-gumgum_img = Image.open("gumgum.png").resize((70, 120))
+# Input field for daily mood journal
+journal_entry = st.text_area("Write today's journal entry:", "")
 
-# Display background image
-st.image(room_img, caption="Background Room", use_column_width=True)
+# Function to analyze sentiment
+def analyze_sentiment(text):
+    sentiment = analyzer.polarity_scores(text)
+    return sentiment['compound']  # Compound score: -1 (negative) to +1 (positive)
 
-# Game logic
-def start_game():
-    st.session_state.game_started = True
-    st.session_state.start_time = time.time()
-    st.session_state.score = 0
+# Initialize an empty DataFrame if there's no saved data
+if 'mood_data' not in st.session_state:
+    st.session_state['mood_data'] = pd.DataFrame(columns=["Date", "Entry", "Sentiment"])
 
-# Game timer and scoring
-if st.session_state.game_started:
-    elapsed_time = time.time() - st.session_state.start_time
-    remaining_time = max(0, game_duration - int(elapsed_time))
-    
-    if remaining_time <= 0:
-        st.session_state.game_started = False
-        st.write(f"Game Over! Your score is: {st.session_state.score}")
-        st.button("Start Again", on_click=start_game)
+# Button to save the journal entry and analyze sentiment
+if st.button("Save Entry"):
+    if journal_entry:
+        sentiment_score = analyze_sentiment(journal_entry)
+        new_entry = {"Date": datetime.datetime.now(), "Entry": journal_entry, "Sentiment": sentiment_score}
+        st.session_state['mood_data'] = st.session_state['mood_data'].append(new_entry, ignore_index=True)
+        st.success("Your journal entry has been saved!")
     else:
-        # Display game timer
-        st.write(f"Time Remaining: {remaining_time} seconds")
+        st.warning("Please write something to log your mood.")
 
-        # Game logic for moving Luffy to catch the GumGum fruit
-        luffy_position = st.slider("Move Luffy (Position X)", 0, WIDTH-150, WIDTH//2)
-        gumgum_position_x = random.randint(0, WIDTH - 70)
-        gumgum_position_y = random.randint(0, HEIGHT - 120)
+# Show a simple chart of mood over time
+if not st.session_state['mood_data'].empty:
+    st.subheader("Mood Trends Over Time")
 
-        st.image(luffy_img, width=150, use_column_width=False, caption="Luffy", use_container_width=False)
-        st.image(gumgum_img, width=70, use_column_width=False, caption="Gum Gum", use_container_width=False)
+    # Plotting sentiment trends
+    st.session_state['mood_data']['Date'] = pd.to_datetime(st.session_state['mood_data']['Date'])
+    st.session_state['mood_data'].set_index('Date', inplace=True)
+    st.session_state['mood_data'].resample('D').mean()['Sentiment'].plot(kind='line', figsize=(10, 6))
 
-        # Check if Luffy catches the GumGum fruit
-        if abs(luffy_position - gumgum_position_x) < 100:
-            st.session_state.score += 1
-            st.write(f"Score: {st.session_state.score}")
-        
+    plt.title('Mood Trends')
+    plt.xlabel('Date')
+    plt.ylabel('Sentiment Score')
+    st.pyplot()
+
+    # Display mood analysis
+    avg_sentiment = st.session_state['mood_data']['Sentiment'].mean()
+    if avg_sentiment > 0.1:
+        st.write("You're doing well! Keep up the positive vibes.")
+    elif avg_sentiment < -0.1:
+        st.write("You might be feeling down. Take care of yourself, and consider talking to someone.")
+    else:
+        st.write("Your mood is neutral. Keep tracking and stay mindful!")
+
+# Tips for well-being
+st.subheader("Personalized Tips")
+st.write("Based on your journal entries, here are some tips to help you feel better:")
+
+if avg_sentiment < 0.0:
+    st.write("- Try some breathing exercises to calm your mind.")
+    st.write("- It may help to take a short walk or talk to a friend.")
+elif avg_sentiment > 0.0:
+    st.write("- Keep focusing on positive activities!")
+    st.write("- Gratitude exercises can further boost your mood.")
 else:
-    st.write("Welcome to 'Eat the GumGum' game!")
-    st.write("Move Luffy to catch the Gum-Gum fruit within 60 seconds!")
-    st.button("Start Game", on_click=start_game)
+    st.write("- Consistency is key! Keep journaling to reflect on your feelings.")
+
+
 
