@@ -1,71 +1,67 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import matplotlib.pyplot as plt
 from datetime import datetime
-import os
+import pickle  # if you're using a pre-trained model
+from transformers import BertTokenizer, BertForSequenceClassification
+import torch
 
-# Initialize Sentiment Intensity Analyzer
-analyzer = SentimentIntensityAnalyzer()
+# Load models (assuming you've already trained and saved them)
+def load_models():
+    # For sentiment analysis (BERT model for example)
+    sentiment_model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=2)
+    sentiment_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    
+    # Load LSTM/ARIMA model for time series predictions if needed
+    # time_series_model = load_your_time_series_model_here()
+    
+    return sentiment_model, sentiment_tokenizer  # Add other models if necessary
 
-# Function to analyze sentiment
-def analyze_sentiment(text):
-    score = analyzer.polarity_scores(text)
-    return score['compound']
+# Sentiment analysis function
+def predict_sentiment(text, model, tokenizer):
+    inputs = tokenizer(text, return_tensors='pt', truncation=True, padding=True, max_length=512)
+    outputs = model(**inputs)
+    logits = outputs.logits
+    sentiment = torch.argmax(logits, dim=1).item()  # 0: Negative, 1: Positive
+    return "Positive" if sentiment == 1 else "Negative"
 
-# Function to save entries and analyze them
-def save_entry(entry, date, sentiment_score):
-    # Check if the file exists, if not, create an empty dataframe
-    if os.path.exists("mood_data.csv"):
-        data = pd.read_csv("mood_data.csv")
-    else:
-        data = pd.DataFrame(columns=["Date", "Entry", "Sentiment"])
+# Display main dashboard
+def display_dashboard():
+    st.title('MindEase AI - Mood Journal')
+    st.write("Welcome to your personalized mood journal! Track your emotions and get insights on your mental well-being.")
+    
+    # Allow user to enter journal entry
+    user_entry = st.text_area("Write your thoughts for today:")
+    
+    if st.button("Submit Entry"):
+        if user_entry:
+            # Predict sentiment of journal entry
+            sentiment_model, sentiment_tokenizer = load_models()
+            sentiment = predict_sentiment(user_entry, sentiment_model, sentiment_tokenizer)
+            
+            st.write(f"Your mood for today is: {sentiment}")
+            
+            # Optionally, store entry in a CSV or database for future tracking
+            with open('mood_data.csv', 'a') as f:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                f.write(f"{timestamp},{sentiment}\n")
+            
+            # Display mood trends if enough data exists
+            mood_data = pd.read_csv('mood_data.csv', header=None, names=['Timestamp', 'Mood'])
+            mood_data['Timestamp'] = pd.to_datetime(mood_data['Timestamp'])
+            mood_data.set_index('Timestamp', inplace=True)
+            
+            # Calculate mood trend (example: simple count of moods per day)
+            mood_counts = mood_data.resample('D')['Mood'].value_counts().unstack(fill_value=0)
+            mood_counts.plot(kind='bar', stacked=True)
+            st.pyplot(plt)
+            
+            st.write("Your mood trends over time:")
+            st.write(mood_counts)
+        else:
+            st.write("Please write something in your journal.")
 
-    # Create a new entry and append it to the dataframe
-    new_data = pd.DataFrame({"Date": [date], "Entry": [entry], "Sentiment": [sentiment_score]})
-    data = pd.concat([data, new_data], ignore_index=True)
-
-    # Save the updated dataframe to a CSV file
-    data.to_csv("mood_data.csv", index=False)
-    return data
-
-# Plot mood trends
-def plot_mood_trends(data):
-    # Convert 'Date' column to datetime
-    data['Date'] = pd.to_datetime(data['Date'])
-
-    # Set 'Date' as index
-    data.set_index('Date', inplace=True)
-
-    # Plot rolling average of sentiment scores over a 7-day window
-    data['Sentiment'].rolling(window=7).mean().plot(title="Mood Trends Over Time", figsize=(10,6))
-    plt.xlabel("Date")
-    plt.ylabel("Mood Score (Sentiment)")
-    st.pyplot()
-
-# Streamlit UI components
-st.title("MindEase AI - Mood Journal")
-
-# User input
-entry = st.text_area("Write about your day:", "")
-submit = st.button("Submit Entry")
-
-if submit and entry:
-    sentiment_score = analyze_sentiment(entry)
-    date = datetime.now().strftime("%Y-%m-%d")
-    data = save_entry(entry, date, sentiment_score)
-    st.success("Your entry has been saved!")
-
-    # Display sentiment score and recent entries
-    st.write(f"Sentiment Score: {sentiment_score}")
-    st.write("Recent Entries:")
-    st.dataframe(data.tail(5))  # Show the latest 5 entries
-
-    # Display Mood Trends
-    plot_mood_trends(data)
-else:
-    st.warning("Please write something to submit.")
-
-# Footer or additional information
-st.markdown("Your privacy matters! Your journal is safe and can be deleted anytime.")
+# Run the app
+if __name__ == '__main__':
+    display_dashboard()
