@@ -1,35 +1,32 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
 
 # Set up page configuration
-st.set_page_config(page_title="Simple Streamlit Dashboard", layout="wide")
+st.set_page_config(page_title="Mood-based Tips", layout="centered")
 
 # Sidebar for input
-st.sidebar.header("User Input")
-user_name = st.sidebar.text_input("Enter your name", "Guest")
-user_age = st.sidebar.slider("Select your age", 18, 100, 25)
+st.sidebar.header("What's your mood today?")
+mood = st.sidebar.radio("Select your current mood", ["Happy", "Sad", "Neutral"])
 
 # Main area
-st.title("Welcome to Your Personalized Dashboard!")
-st.write(f"Hello, {user_name}!")
-st.write(f"You are {user_age} years old.")
+st.title("Personalized Mood-based Tips")
 
-# Generating random data for plotting
-data = pd.DataFrame({
-    "Age": np.random.randint(20, 60, 100),
-    "Score": np.random.randint(0, 100, 100)
-})
+# Function to provide tips based on mood
+def get_mood_tip(mood):
+    if mood == "Happy":
+        return "That's great! Keep enjoying the positive vibes 😊. You might want to share your happiness with others!"
+    elif mood == "Sad":
+        return "I'm sorry you're feeling this way 😔. Take a few deep breaths and try to do something kind for yourself. Maybe listen to your favorite music or take a walk in nature. You deserve it!"
+    elif mood == "Neutral":
+        return "You're in a balanced mood. A great time to focus on productivity and self-care. Try tackling something small on your to-do list today!"
 
-# Button to generate plot
-if st.sidebar.button("Generate Plot"):
-    st.subheader("Age vs. Score")
-    st.scatter_chart(data)
+# Display mood tip
+st.write(get_mood_tip(mood))
 
 # Footer message
 st.markdown("""
     --- 
-    Created with ❤️ by Streamlit.
+    Take care of yourself! ❤️
 """)
+
 
 
